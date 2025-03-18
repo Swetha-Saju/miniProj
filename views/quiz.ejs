@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dyslexia Assessment Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .option-btn.selected {
+            background-color: #4299e1;
+            color: white;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-[#0A192F] text-white font-sans min-h-screen flex items-center justify-center p-4">
+    <div id="quiz-container" class="max-w-2xl w-full bg-[#1F2A48] rounded-xl shadow-lg p-6 mx-auto">
+        <h1 class="text-2xl md:text-3xl font-bold text-center mb-6">Dyslexia Assessment Quiz</h1>
+        
+        <!-- Progress bar -->
+        <div class="w-full bg-gray-700 rounded-full h-2.5 mb-6">
+            <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full progress-bar" style="width: 5%"></div>
+        </div>
+        
+        <div id="question-container" class="mb-8">
+            <h2 id="question" class="text-xl font-semibold mb-4">Loading question...</h2>
+            <div class="flex justify-center mb-6">
+                <img id="question-image" src="#" alt="Question Image" class="w-4/5 max-h-64 object-contain rounded-lg">
+            </div>
+            <div id="options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+        
+        <div class="flex justify-between mt-6">
+            <button id="prev-btn" onclick="prevQuestion()" class="px-5 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition hidden">Previous</button>
+            <div class="flex-grow"></div>
+            <button id="next-btn" onclick="nextQuestion()" class="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Next</button>
+            <button id="submit-btn" onclick="submitQuiz()" class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition hidden btn-disabled">Submit</button>
+        </div>
+        
+        <!-- Incomplete questions warning (hidden initially) -->
+        <div id="incomplete-warning" class="mt-4 text-yellow-400 text-center hidden">
+            Please answer all questions before submitting.
+            <div id="unanswered-questions" class="text-sm mt-2 text-yellow-300"></div>
+        </div>
+    </div>
+    
+    <!-- Results container (hidden initially) -->
+    <div id="results-container" class="max-w-2xl w-full bg-[#1F2A48] rounded-xl shadow-lg p-6 mx-auto hidden">
+        <h1 class="text-2xl md:text-3xl font-bold text-center mb-6">🎉 Quiz Completed! 🎉</h1>
+        <p id="score-display" class="text-xl text-center mb-4"></p>
+        <p id="feedback-message" class="text-lg text-center mb-4"></p>
+        <p id="dyslexia-message" class="text-base text-yellow-300 text-center mb-6"></p>
+        <div class="flex justify-center space-x-4">
+            <button onclick="restartQuiz()" class="px-5 py-3 text-lg font-bold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                🔄 Try Again
+            </button>
+            <button onclick="saveAndProceed()" class="px-5 py-3 text-lg font-bold bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                💾 Save Results & Continue
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "1. Which one of the words is most accurate?", image: "images/qn1.jpg", options: ["Dog", "Bog"], answer: "Dog" },
+            { question: "2. Observe the images", image: "images/qn2.jpg", options: ["1", "2", "3", "4"], answer: "2" },
+            { question: "3. Jumbled Letters: B - R - I - D - G - E", image: "images/qn3.jpeg", options: ["BRIGDE", "BIRDGE", "BRIDGE"], answer: "BRIDGE" },
+            { question: "4. Do you often have trouble spelling words correctly even after repeated practice?", image: "images/qn4.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "5. Read the following Six slippery snails slid slowly south, searching for sunshine.", image: "images/qn5.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "6. Are you uncomfortable reading out loud?", image: "images/qn6.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "7. Do you sometimes confuse or reverse letters, such as reading 'b' as 'd' or 'p' as 'q'?", image: "images/qn7.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "8. Do you occasionally read words in reverse order, such as reading 'was' as 'saw'?", image: "images/qn8.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "9. Do you struggle to follow written instructions, even when they are clear and simple?", image: "images/qn9.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "10. Do you often lose your place while reading, requiring you to reread sections?", image: "images/qn10.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "11. Do you struggle to break words into individual sounds.eg.  Splash ,/s/ - /p/ - /l/ - /æ/ - /ʃ/", image: "images/qn11.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "12. Do letters or words seem to move, blur, or jumble when you read?", image: "images/qn12.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "13. Do you often confuse numbers with letters (such as writing 6 instead of G)?", image: "images/qn13.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "14. Do you have a family member (parent, sibling) who has struggled with reading?", image: "images/qn14.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "15. Which sentence has the correct word order?", image: "images/qn15.jpeg", options: ["The dog ran quickly", "Quickly the ran dog", "Dog quickly the ran", "Ran quickly dog the"], answer: "The dog ran quickly" },
+            { question: "16. Do you struggle to remember a phone number after hearing it once?", image: "images/qn16.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "17. Do you find it easier to understand something when spoken rather than written?", image: "images/qn17.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "18. Do you find it hard to remember the days of the week in order?", image: "images/qn18.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "19. Do you feel like reading takes longer for you than others?", image: "images/qn19.jpeg", options: ["YES", "NO"], answer: "YES" },
+            { question: "20. Do you learn better through hands-on activities rather than reading?", image: "images/qn20.jpeg", options: ["YES", "NO"], answer: "YES" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        
+        // Initialize the quiz when the page loads
+        document.addEventListener("DOMContentLoaded", () => {
+            // Check if there are saved answers in localStorage
+            const savedAnswers = localStorage.getItem("dyslexiaQuizAnswers");
+            if (savedAnswers) {
+                userAnswers = JSON.parse(savedAnswers);
+            }
+            
+            // Check if quiz was completed previously but not saved (after login redirect)
+            const quizCompleted = localStorage.getItem("quizCompleted");
+            const hasScores = localStorage.getItem("normalScore") && localStorage.getItem("dyslexicIndicatorScore");
+            
+            if (quizCompleted === "true" && hasScores) {
+                // Display results instead of quiz
+                showResults();
+            } else {
+                // Load first question
+                loadQuestion();
+            }
+        });
+        
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            const questionElement = document.getElementById("question");
+            const imageElement = document.getElementById("question-image");
+            const optionsContainer = document.getElementById("options");
+            const prevBtn = document.getElementById("prev-btn");
+            const nextBtn = document.getElementById("next-btn");
+            const submitBtn = document.getElementById("submit-btn");
+            const incompleteWarning = document.getElementById("incomplete-warning");
+            
+            // Update progress bar
+            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = `${progressPercentage}%`;
+            
+            // Set question text and image
+            questionElement.textContent = currentQuestion.question;
+            imageElement.src = currentQuestion.image;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = "";
+            
+            // Add option buttons
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.className = "option-btn w-full py-3 px-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition text-center";
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestionIndex] === option) {
+                    button.classList.add("selected");
+                    button.classList.remove("bg-gray-700");
+                    button.classList.add("bg-blue-600");
+                }
+                
+                button.addEventListener("click", () => selectAnswer(option));
+                optionsContainer.appendChild(button);
+            });
+            
+            // Show/hide navigation buttons
+            prevBtn.classList.toggle("hidden", currentQuestionIndex === 0);
+            nextBtn.classList.toggle("hidden", currentQuestionIndex === questions.length - 1);
+            
+            // Only show submit button on the last question and hide warning initially
+            submitBtn.classList.toggle("hidden", currentQuestionIndex !== questions.length - 1);
+            incompleteWarning.classList.add("hidden");
+            
+            // Check if all questions are answered before enabling submit button
+            if (currentQuestionIndex === questions.length - 1) {
+                updateSubmitButtonState();
+            }
+        }
+        
+        function selectAnswer(option) {
+            // Save the selected answer
+            userAnswers[currentQuestionIndex] = option;
+            localStorage.setItem("dyslexiaQuizAnswers", JSON.stringify(userAnswers));
+            
+            // Update UI to show selection
+            const optionButtons = document.querySelectorAll("#options button");
+            optionButtons.forEach(button => {
+                if (button.textContent === option) {
+                    button.classList.add("selected");
+                    button.classList.remove("bg-gray-700");
+                    button.classList.add("bg-blue-600");
+                } else {
+                    button.classList.remove("selected");
+                    button.classList.remove("bg-blue-600");
+                    button.classList.add("bg-gray-700");
+                }
+            });
+            
+            // If on last question, check if all questions are answered
+            if (currentQuestionIndex === questions.length - 1) {
+                updateSubmitButtonState();
+            }
+        }
+        
+        function updateSubmitButtonState() {
+            const submitBtn = document.getElementById("submit-btn");
+            const incompleteWarning = document.getElementById("incomplete-warning");
+            const unansweredQuestions = document.getElementById("unanswered-questions");
+            
+            // Check if all questions have been answered
+            const unanswered = [];
+            for (let i = 0; i < questions.length; i++) {
+                if (!userAnswers.hasOwnProperty(i)) {
+                    unanswered.push(i + 1); // Add question number (1-based)
+                }
+            }
+            
+            if (unanswered.length === 0) {
+                // All questions answered, enable submit button
+                submitBtn.classList.remove("btn-disabled");
+                incompleteWarning.classList.add("hidden");
+                submitBtn.disabled = false;
+            } else {
+                // Some questions unanswered, disable submit button
+                submitBtn.classList.add("btn-disabled");
+                incompleteWarning.classList.remove("hidden");
+                submitBtn.disabled = true;
+                
+                // Show list of unanswered questions
+                if (unanswered.length <= 5) {
+                    unansweredQuestions.textContent = `Unanswered questions: ${unanswered.join(", ")}`;
+                } else {
+                    unansweredQuestions.textContent = `${unanswered.length} questions still need answers`;
+                }
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+        
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+        
+        function submitQuiz() {
+            // Verify all questions are answered before submitting
+            for (let i = 0; i < questions.length; i++) {
+                if (!userAnswers.hasOwnProperty(i)) {
+                    // If any questions are unanswered, show warning and don't submit
+                    document.getElementById("incomplete-warning").classList.remove("hidden");
+                    return;
+                }
+            }
+            
+            // Calculate scores
+            let normalScore = 0;
+            let dyslexicIndicatorScore = 0;
+            
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                
+                // Count correct answers for normal score
+                if (userAnswer === question.answer) {
+                    normalScore++;
+                }
+                
+                // Count dyslexia indicators for YES answers to diagnostic questions (questions 4-20)
+                if (index >= 3 && userAnswer === "YES") {
+                    dyslexicIndicatorScore++;
+                }
+            });
+            
+            // Save results to localStorage
+            // Save results to localStorage
+            localStorage.setItem("normalScore", normalScore);
+            localStorage.setItem("dyslexicIndicatorScore", dyslexicIndicatorScore);
+            localStorage.setItem("quizCompleted", "true");
+            
+            // Show results
+            showResults();
+        }
+        
+        function showResults() {
+            // Get scores from localStorage
+            const normalScore = parseInt(localStorage.getItem("normalScore") || "0");
+            const dyslexicIndicatorScore = parseInt(localStorage.getItem("dyslexicIndicatorScore") || "0");
+            
+            // Hide quiz, show results
+            document.getElementById("quiz-container").classList.add("hidden");
+            document.getElementById("results-container").classList.remove("hidden");
+            
+            // Set score display
+            document.getElementById("score-display").innerHTML = `
+                <span class="font-bold">General Score: ${normalScore} / ${questions.length}</span><br>
+                <span class="font-bold">Dyslexia Indicators: ${dyslexicIndicatorScore} / 17</span>
+            `;
+            
+            // Set feedback message
+            let feedbackMessage = "";
+            if (normalScore > 15) {
+                feedbackMessage = "🌟 Amazing! Your reading and processing skills are strong!";
+            } else if (normalScore > 10) {
+                feedbackMessage = "😊 Great effort! Keep practicing and improving!";
+            } else {
+                feedbackMessage = "💡 Don't worry! Learning takes time, and practice makes perfect!";
+            }
+            document.getElementById("feedback-message").textContent = feedbackMessage;
+            
+            // Set dyslexia message based on indicators
+            let dyslexiaMessage = "";
+            if (dyslexicIndicatorScore >= 10) {
+                dyslexiaMessage = "🔍 Based on your responses, you may experience reading difficulties consistent with dyslexia. Consider consulting a specialist for further assessment.";
+            } else if (dyslexicIndicatorScore >= 5) {
+                dyslexiaMessage = "🔍 Your responses show some indicators that might be associated with reading challenges. Consider monitoring your reading experiences.";
+            }
+            document.getElementById("dyslexia-message").textContent = dyslexiaMessage;
+            
+            // Check if we returned after login
+            const quizCompleted = localStorage.getItem("quizCompleted");
+            if (quizCompleted === "true") {
+                // Add notification about resuming
+                const notification = document.createElement("p");
+                notification.textContent = "Welcome back! Your quiz results are ready to be saved.";
+                notification.className = "text-green-400 text-center mb-4";
+                document.getElementById("score-display").parentNode.insertBefore(notification, document.getElementById("score-display"));
+            }
+        }
+        
+        function restartQuiz() {
+            // Clear answers and restart
+            userAnswers = {};
+            localStorage.removeItem("dyslexiaQuizAnswers");
+            localStorage.removeItem("normalScore");
+            localStorage.removeItem("dyslexicIndicatorScore");
+            localStorage.removeItem("quizCompleted");
+            currentQuestionIndex = 0;
+            
+            // Show quiz container, hide results
+            document.getElementById("quiz-container").classList.remove("hidden");
+            document.getElementById("results-container").classList.add("hidden");
+            
+            // Load first question
+            loadQuestion();
+        }
+        
+        async function saveAndProceed() {
+    // Save results to server
+    const normalScore = parseInt(localStorage.getItem("normalScore") || "0");
+    const dyslexicIndicatorScore = parseInt(localStorage.getItem("dyslexicIndicatorScore") || "0");
+    console.log("Normal Score:", normalScore);
+    console.log("Dyslexic Indicator Score:", dyslexicIndicatorScore);
+    
+    try {
+        const API_BASE = '<%= process.env.API_BASE_URL %>';
+        const response = await fetch(`${API_BASE}/auth/score`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                normalScore,
+                dyslexicIndicatorScore
+            })
+        });
+        console.log(response);
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear saved answers and show success message
+                alert("Quiz results saved successfully!");
+                localStorage.removeItem("dyslexiaQuizAnswers");
+                localStorage.removeItem("normalScore");
+                localStorage.removeItem("dyslexicIndicatorScore");
+                localStorage.removeItem("quizCompleted");
+                window.location.href = "/";
+            } else {
+                alert("Failed to save quiz results. Please try again later.");
+            }
+        } else {
+            alert("Failed to save quiz results. Please try again later.");
+            window.location.href = "/";
+        }
+    } catch (error) {
+        console.error("Error saving quiz results:", error);
+        alert("An error occurred while saving your results. Please try again later.");
+        window.location.href = "/";
+    }
+}
+    </script>
+</body>
+</html>

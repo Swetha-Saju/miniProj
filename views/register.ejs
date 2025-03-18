@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Backup styles in case Tailwind doesn't load properly */
+        body {
+            background-color: #0A192F;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        input, select {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        select option {
+            background-color: #0A192F; /* Dark background for options */
+            color: white; /* White text */
+        }
+        .error-message {
+            color: #FF6B6B;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+        /* Mobile-specific adjustments */
+        @media (max-width: 640px) {
+            input, select, button {
+                font-size: 16px; /* Prevents iOS zoom on focus */
+            }
+            .form-container {
+                padding: 1rem;
+                width: 95%;
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#0A192F] text-white min-h-screen flex flex-col items-center justify-center p-2 overflow-y-auto" style="background-color: #0A192F;">
+    <div class="form-container bg-white bg-opacity-10 rounded-lg shadow-lg p-5 sm:p-6 md:p-8 w-full max-w-4xl mx-auto my-4" style="background-color: rgba(255, 255, 255, 0.1);">
+        <h2 class="text-3xl sm:text-4xl font-bold text-center mb-5 sm:mb-6 text-white">Registration</h2>
+        
+        <!-- Error message container -->
+        <div id="errorMessage" class="bg-red-500 bg-opacity-20 text-red-100 p-3 rounded-lg text-center mb-5 text-base" style="display: none;"></div>
+        
+        <form id="registerForm" class="space-y-4 sm:space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Name and Email -->
+                <div>
+                    <input 
+                        type="text" 
+                        name="fullName"
+                        placeholder="Full Name" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                <div>
+                    <input 
+                        type="email" 
+                        name="email"
+                        placeholder="Email" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                
+                <!-- Date and Phone -->
+                <div>
+                    <input 
+                        type="date" 
+                        name="birthdate"
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                <div>
+                    <input 
+                        type="tel" 
+                        name="phone"
+                        placeholder="Phone Number" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                
+                <!-- Gender and City -->
+                <div>
+                    <select 
+                        name="gender"
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <input 
+                        type="text" 
+                        name="city"
+                        placeholder="City" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                
+                <!-- State and Country -->
+                <div>
+                    <input 
+                        type="text" 
+                        name="state"
+                        placeholder="State" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                <div>
+                    <input 
+                        type="text" 
+                        name="country"
+                        placeholder="Country" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+            </div>
+            
+            <!-- Username and Password section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <input 
+                        type="text" 
+                        name="username"
+                        placeholder="Username" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                <div>
+                    <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Password" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                <div class="sm:col-span-2">
+                    <input 
+                        type="password" 
+                        name="confirmPassword"
+                        placeholder="Confirm Password" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+            </div>
+            
+            <!-- Terms -->
+            <div class="flex items-center justify-center my-2">
+                <input type="checkbox" id="terms" name="terms" required class="mr-3 h-5 w-5">
+                <label for="terms" class="text-sm sm:text-base text-white">I agree to the Terms and Conditions</label>
+            </div>
+            
+            <!-- Submit Button -->
+            <button 
+                type="submit"
+                class="w-full p-3 sm:p-4 bg-blue-500 hover:bg-blue-400 rounded-lg text-white font-medium text-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 mt-2"
+                style="background-color: #1E90FF;"
+            >
+                Submit
+            </button>
+        </form>
+        <div class="text-center mt-4 text-sm sm:text-base">
+            Already have an account?
+            <a 
+                href="/"
+                class="text-blue-400 hover:text-blue-300 hover:underline ml-1"
+                style="color: #1E90FF;"
+            >
+                Login
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Get API base URL from environment variable
+        const API_BASE = '<%= process.env.API_BASE_URL %>';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('registerForm');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Function to adjust date input for better mobile compatibility
+            const dateInput = document.querySelector('input[name="birthdate"]');
+            if (dateInput) {
+                // Set default value to empty to show placeholder on mobile
+                dateInput.value = '';
+                // Add a placeholder that works on mobile
+                dateInput.setAttribute('placeholder', 'Date of Birth');
+            }
+            
+            registerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = {
+                    fullname: document.querySelector('input[name="fullName"]').value,
+                    email: document.querySelector('input[name="email"]').value,
+                    dob: document.querySelector('input[name="birthdate"]').value,
+                    phone: document.querySelector('input[name="phone"]').value,
+                    gender: document.querySelector('select[name="gender"]').value,
+                    city: document.querySelector('input[name="city"]').value,
+                    state: document.querySelector('input[name="state"]').value,
+                    country: document.querySelector('input[name="country"]').value,
+                    username: document.querySelector('input[name="username"]').value,
+                    password: document.querySelector('input[name="password"]').value,
+                    confirmPassword: document.querySelector('input[name="confirmPassword"]').value,
+                    terms: document.querySelector('input[name="terms"]').checked
+                };
+                
+                // Client-side validation
+                if (formData.password !== formData.confirmPassword) {
+                    errorMessage.textContent = 'Passwords do not match';
+                    errorMessage.style.display = 'block';
+                    return false;
+                }
+                
+                if (!formData.terms) {
+                    errorMessage.textContent = 'You must agree to the Terms and Conditions';
+                    errorMessage.style.display = 'block';
+                    return false;
+                }
+                
+                try {
+                    // Send registration request to API
+                    const response = await fetch(`${API_BASE}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        // Successful registration
+                        // Log success message
+                        alert(data.message);
+                        // Redirect to login page
+                        window.location.href = '/quiz';
+                    } else {
+                        // Show error message from API
+                        errorMessage.textContent = data.message || 'Registration failed. Please try again.';
+                        errorMessage.style.display = 'block';
+                        // Scroll to top to see error
+                        window.scrollTo(0, 0);
+                    }
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    errorMessage.textContent = 'Network error. Please try again later.';
+                    errorMessage.style.display = 'block';
+                    // Scroll to top to see error
+                    window.scrollTo(0, 0);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

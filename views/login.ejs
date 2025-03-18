@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Backup styles in case Tailwind doesn't load properly */
+        body {
+            background-color: #0A192F;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        input {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .error-message {
+            color: #FF6B6B;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+        /* Mobile-specific adjustments */
+        @media (max-width: 640px) {
+            input, button {
+                font-size: 16px; /* Prevents iOS zoom on focus */
+                height: auto; /* Let padding control the height */
+            }
+            .login-container {
+                padding: 1.5rem;
+                width: 95%;
+                max-width: 90vw;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#0A192F] text-white min-h-screen flex flex-col items-center justify-center p-2 sm:p-4" style="background-color: #0A192F;">
+    <div class="login-container bg-white bg-opacity-10 rounded-lg shadow-lg p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-md mx-auto" style="background-color: rgba(255, 255, 255, 0.1);">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4 sm:mb-6 md:mb-8 text-white">Login</h2>
+        
+        <% if (locals.error) { %>
+        <div class="bg-red-500 bg-opacity-20 text-red-100 p-2 sm:p-3 rounded-lg text-center mb-4 sm:mb-6 text-sm sm:text-base">
+            <%= error %>
+        </div>
+        <% } %>
+        
+        <form id="loginForm" class="space-y-4 sm:space-y-6">
+            <div class="space-y-3 sm:space-y-4 md:space-y-6">
+                <!-- Username/Email Field -->
+                <div>
+                    <input 
+                        name="username"
+                        type="text" 
+                        placeholder="Username" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                
+                <!-- Password Field -->
+                <div>
+                    <input 
+                        name="password"
+                        type="password" 
+                        placeholder="Password" 
+                        required
+                        class="w-full p-3 sm:p-4 rounded-lg bg-white bg-opacity-20 border-none text-white placeholder-white placeholder-opacity-70 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                        style="background-color: rgba(255, 255, 255, 0.2); color: white;"
+                    >
+                </div>
+                
+                <!-- Client-side Error Message Display -->
+                <div id="errorMessage" class="bg-red-500 bg-opacity-20 text-red-100 p-2 rounded-lg text-center text-xs sm:text-sm" style="display: none;">
+                    Invalid username or password
+                </div>
+            </div>
+            
+            <!-- Login Button -->
+            <button 
+                type="submit"
+                class="w-full p-3 sm:p-4 bg-blue-500 hover:bg-blue-400 rounded-lg text-white font-medium text-base sm:text-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                style="background-color: #1E90FF;"
+            >
+                Login
+            </button>
+            
+            <!-- Forgot Password Link -->
+            <div class="text-center mt-3 sm:mt-4">
+                <a 
+                    href="/forgot-password" 
+                    class="text-blue-400 hover:text-blue-300 hover:underline text-xs sm:text-sm md:text-base"
+                    style="color: #1E90FF;"
+                >
+                    Forgot Password?
+                </a>
+            </div>
+            <div class="text-center mt-2 sm:mt-3 text-xs sm:text-sm md:text-base">
+                Don't have an account?
+                <a 
+                    href="/register" 
+                    class="text-blue-400 hover:text-blue-300 hover:underline ml-1"
+                    style="color: #1E90FF;"
+                >
+                    Register
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Get API base URL from environment variable
+        const API_BASE = '<%= process.env.API_BASE_URL %>';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Focus the username field on page load for better UX
+            const usernameInput = document.querySelector('input[name="username"]');
+            if (usernameInput && window.innerWidth >= 640) { // Only auto-focus on larger screens
+                usernameInput.focus();
+            }
+            
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.querySelector('input[name="username"]').value;
+                const password = document.querySelector('input[name="password"]').value;
+                
+                // Basic client-side validation
+                if (!username || !password) {
+                    errorMessage.textContent = 'Username and password are required';
+                    errorMessage.style.display = 'block';
+                    return false;
+                }
+                
+                try {
+                    // Show loading state (optional)
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.textContent;
+                    submitButton.textContent = 'Logging in...';
+                    submitButton.disabled = true;
+                    
+                    // Send login request to API
+                    const response = await fetch(`${API_BASE}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Reset button state
+                    submitButton.textContent = originalButtonText;
+                    submitButton.disabled = false;
+                    
+                    if (response.ok && data.success) {
+                        // Successful login based on your API response format
+                        alert(data.message);
+                        if(!data.isQuizCompleted){
+                            window.location.href = '/quiz';
+                        }
+                        else{
+                            window.location.href = '/';
+                        }
+                    } else {
+                        // Show error message from API
+                        errorMessage.textContent = data.message || 'Login failed. Please try again.';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    errorMessage.textContent = 'Network error. Please try again later.';
+                    errorMessage.style.display = 'block';
+                    
+                    // Reset button state
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    submitButton.textContent = 'Login';
+                    submitButton.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
