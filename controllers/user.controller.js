@@ -63,6 +63,7 @@ const logIn = async (req, res) => {
         const { password: userPassword, ...rest } = user._doc;
         // res.cookie('authToken', token, { httpOnly: true });
         req.session.user = rest;
+        // console.log(req.session.user);
         res.status(200).json({ success: true, message: 'Sign-in successful',isQuizCompleted:rest.isQuizCompleted });
         // res.status(200).json({ message: 'Sign-in successful' , token: token, user: rest });
     } catch (err) {

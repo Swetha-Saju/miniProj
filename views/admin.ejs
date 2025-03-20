@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dyslexia Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#0A192F] text-white font-sans min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-[#1F2A48] shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-2 sm:px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-lg md:text-xl font-bold truncate">Dyslexia Assessment</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="block">
+                        <div class="flex items-center space-x-2 md:space-x-4">
+                            <span class="hidden md:flex items-center">
+                                <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                <span id="admin-name" class="hidden md:inline"> <%= user.fullname %> </span>
+                            </span>
+                            <button id="logout-btn" class="px-2 py-1 md:px-4 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm md:text-base">
+                                <i class="fas fa-sign-out-alt mr-1"></i> <span class="hidden md:inline">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow container mx-auto px-2 md:px-4 py-4 md:py-8">
+        <div class="bg-[#1F2A48] rounded-xl shadow-lg p-3 md:p-6 overflow-hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 space-y-3 md:space-y-0">
+                <h1 class="text-xl md:text-2xl font-bold">Assessment Results</h1>
+                <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <input type="text" id="search-input" placeholder="Search users..." 
+                               class="w-full px-3 py-2 bg-[#2D3B5A] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base">
+                        <i class="fas fa-search absolute right-3 top-2 text-gray-400"></i>
+                    </div>
+                    <select id="filter-dropdown" class="w-full md:w-auto px-3 py-2 bg-[#2D3B5A] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base">
+                        <option value="all">All Users</option>
+                        <option value="high-risk">High Risk (10+)</option>
+                        <option value="medium-risk">Medium Risk (5-9)</option>
+                        <option value="low-risk">Low Risk (0-4)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-4 md:mb-6">
+                <div class="bg-[#2D3B5A] p-3 md:p-4 rounded-lg shadow">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-300">Total Users</h3>
+                    <p class="text-2xl md:text-3xl font-bold" id="total-users">0</p>
+                </div>
+                <div class="bg-[#2D3B5A] p-3 md:p-4 rounded-lg shadow">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-300">Dyslexia Risk</h3>
+                    <div class="flex flex-wrap items-center gap-2 md:gap-4 text-sm md:text-base">
+                        <span class="flex items-center">
+                            <span class="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span>
+                            <span id="high-risk-count">0</span> High
+                        </span>
+                        <span class="flex items-center">
+                            <span class="inline-block w-3 h-3 bg-yellow-500 rounded-full mr-1"></span>
+                            <span id="medium-risk-count">0</span> Med
+                        </span>
+                        <span class="flex items-center">
+                            <span class="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span>
+                            <span id="low-risk-count">0</span> Low
+                        </span>
+                    </div>
+                </div>
+                <div class="bg-[#2D3B5A] p-3 md:p-4 rounded-lg shadow sm:col-span-2 md:col-span-1">
+                    <h3 class="text-base md:text-lg font-semibold text-gray-300">Average Score</h3>
+                    <p class="text-2xl md:text-3xl font-bold" id="avg-score">0</p>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="w-full overflow-x-auto">
+                <table class="min-w-full bg-[#2D3B5A] rounded-lg overflow-hidden">
+                    <thead class="hidden md:table-header-group">
+                        <tr class="bg-[#1A2338] text-gray-300">
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    ID <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    User <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    Email <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    Score <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    Indicators <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider">Risk</th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[#263554]">
+                                <div class="flex items-center">
+                                    Date <i class="fas fa-sort ml-1"></i>
+                                </div>
+                            </th>
+                            <th class="px-4 md:px-6 py-2 md:py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be loaded here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex flex-col md:flex-row items-center justify-between mt-4 md:mt-6 space-y-3 md:space-y-0">
+                <div class="text-xs md:text-sm text-gray-400">
+                    Showing <span id="showing-start">1</span> to <span id="showing-end">10</span> of <span id="total-entries">100</span> entries
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prev-page" class="px-2 py-1 md:px-3 md:py-1 bg-[#2D3B5A] rounded hover:bg-[#3A4B6A] disabled:opacity-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div id="pagination-numbers" class="flex flex-wrap justify-center space-x-1 md:space-x-2">
+                        <!-- Page numbers will be inserted here -->
+                    </div>
+                    <button id="next-page" class="px-2 py-1 md:px-3 md:py-1 bg-[#2D3B5A] rounded hover:bg-[#3A4B6A] disabled:opacity-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="user-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-[#1F2A48] rounded-xl p-4 md:p-6 max-w-2xl w-full mx-auto max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg md:text-xl font-bold">User Details</h2>
+                <button id="close-modal" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="user-details-content" class="space-y-4 overflow-y-auto">
+                <!-- User details will be inserted here -->
+            </div>
+            <div class="mt-4 md:mt-6 flex justify-end">
+                <button id="close-details-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '<%= process.env.API_BASE_URL %>';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set admin name (will be updated from API)
+            
+            // Load data from API
+            fetchAdminData();
+            
+            // Add event listeners
+            document.getElementById('logout-btn').addEventListener('click', logout);
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+            document.getElementById('filter-dropdown').addEventListener('change', handleFilter);
+            document.getElementById('close-modal').addEventListener('click', closeUserModal);
+            document.getElementById('close-details-btn').addEventListener('click', closeUserModal);
+            document.getElementById('prev-page').addEventListener('click', () => changePage(currentPage - 1));
+            document.getElementById('next-page').addEventListener('click', () => changePage(currentPage + 1));
+            
+            // Add sorting event listeners to table headers
+            const sortableHeaders = document.querySelectorAll('th.cursor-pointer');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    // Get the column name from the header text
+                    const headerText = header.textContent.trim().toLowerCase();
+                    let sortKey;
+                    
+                    if (headerText.includes('id')) sortKey = '_id';
+                    else if (headerText.includes('user')) sortKey = 'username';
+                    else if (headerText.includes('email')) sortKey = 'email';
+                    else if (headerText.includes('score')) sortKey = 'normalScore';
+                    else if (headerText.includes('indicators')) sortKey = 'dyslexicScore';
+                    else if (headerText.includes('date')) sortKey = 'date';
+                    
+                    if (sortKey) sortTable(sortKey);
+                });
+            });
+        });
+
+        // Variables for pagination and data
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let userData = [];
+        let filteredData = [];
+        let admin = {};
+
+        async function fetchAdminData() {
+            try {
+                // Fetch admin data and user data
+                const response = await fetch(`${API_BASE}/admin/details`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log(response);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                const data = await response.json();
+                userData = data.users.map(user => ({
+                    _id: user._id,
+                    username: user.username,
+                    email: user.email,
+                    fullname: user.fullname,
+                    normalScore: user.scores?.normalScore || 0,
+                    dyslexicScore: user.scores?.dyslexicIndicatorScore || 0,
+                    date: user.updatedAt,
+                    completed: user.isQuizCompleted,
+                    phone: user.phone,
+                    gender: user.gender,
+                    dob: user.dob,
+                    city: user.city,
+                    state: user.state,
+                    country: user.country
+                }));
+                
+                // Initialize filtered data
+                filteredData = [...userData];
+                
+                // Update the dashboard
+                updateDashboardStats();
+                renderTable();
+                setupPagination();
+            } catch (error) {
+                console.error('Error fetching admin data:', error);
+                alert('Failed to load data. Please check your connection and try again.');
+                window.location.href = '/';
+            }
+        }
+
+        function updateDashboardStats() {
+            // Calculate statistics
+            const totalUsers = userData.length;
+            const highRiskUsers = userData.filter(user => user.dyslexicScore >= 10).length;
+            const mediumRiskUsers = userData.filter(user => user.dyslexicScore >= 5 && user.dyslexicScore < 10).length;
+            const lowRiskUsers = userData.filter(user => user.dyslexicScore < 5).length;
+            
+            // Calculate average score for users who completed the quiz
+            const completedUsers = userData.filter(user => user.completed);
+            const avgScore = completedUsers.length > 0 
+                ? completedUsers.reduce((sum, user) => sum + user.normalScore, 0) / completedUsers.length 
+                : 0;
+            
+            // Update DOM
+            document.getElementById('total-users').textContent = totalUsers;
+            document.getElementById('high-risk-count').textContent = highRiskUsers;
+            document.getElementById('medium-risk-count').textContent = mediumRiskUsers;
+            document.getElementById('low-risk-count').textContent = lowRiskUsers;
+            document.getElementById('avg-score').textContent = avgScore.toFixed(1);
+            document.getElementById('total-entries').textContent = filteredData.length;
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('users-table-body');
+            tableBody.innerHTML = '';
+            
+            // Calculate pagination
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = Math.min(start + rowsPerPage, filteredData.length);
+            const paginatedData = filteredData.slice(start, end);
+            
+            // Update showing text
+            document.getElementById('showing-start').textContent = filteredData.length > 0 ? start + 1 : 0;
+            document.getElementById('showing-end').textContent = end;
+            
+            // Check if there are any results
+            if (paginatedData.length === 0) {
+                const noDataRow = document.createElement('tr');
+                noDataRow.innerHTML = `
+                    <td colspan="8" class="px-4 md:px-6 py-4 text-center text-gray-400">
+                        No matching records found
+                    </td>
+                `;
+                tableBody.appendChild(noDataRow);
+                return;
+            }
+            
+            // Create rows for each user
+            paginatedData.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-[#263554] transition';
+                
+                // Determine risk level and color
+                let riskLevel, riskColor;
+                if (user.dyslexicScore >= 10) {
+                    riskLevel = 'High';
+                    riskColor = 'bg-red-500';
+                } else if (user.dyslexicScore >= 5) {
+                    riskLevel = 'Medium';
+                    riskColor = 'bg-yellow-500';
+                } else {
+                    riskLevel = 'Low';
+                    riskColor = 'bg-green-500';
+                }
+                
+                // Format date
+                const assessmentDate = new Date(user.date);
+                const formattedDate = assessmentDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                
+                // Desktop view
+                const desktopRow = `
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">${user._id.substring(0, 8)}...</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap font-medium text-sm">${user.username}</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">${user.email}</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">${user.normalScore}/20</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">${user.dyslexicScore}/17</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${riskColor} text-white">
+                            ${riskLevel}
+                        </span>
+                    </td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">${formattedDate}</td>
+                    <td class="hidden md:table-cell px-4 md:px-6 py-2 md:py-4 whitespace-nowrap text-xs md:text-sm">
+                        <button class="text-blue-400 hover:text-blue-500 ml-4 view-details" data-id="${user._id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                
+                // Mobile view (card-like)
+                const mobileRow = `
+                    <td class="md:hidden px-4 py-3 block w-full">
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between items-center">
+                                <div class="font-medium">${user.username}</div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${riskColor} text-white">
+                                    ${riskLevel}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-300">${user.email}</div>
+                            <div class="flex justify-between text-xs text-gray-300">
+                                <span>Score: ${user.normalScore}/20</span>
+                                <span>Indicators: ${user.dyslexicScore}/17</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-300">
+                                <span>${formattedDate}</span>
+                                <button class="text-blue-400 hover:text-blue-500 view-details" data-id="${user._id}">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                `;
+                
+                row.innerHTML = desktopRow + mobileRow;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.view-details').forEach(button => {
+                button.addEventListener('click', () => showUserDetails(button.getAttribute('data-id')));
+            });
+        }
+
+        function setupPagination() {
+            const paginationContainer = document.getElementById('pagination-numbers');
+            paginationContainer.innerHTML = '';
+            
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            
+            // Update pagination buttons state
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages || totalPages === 0;
+            
+            // Determine which page numbers to show
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, startPage + 2);
+            
+            // Adjust if we're near the end
+            if (endPage - startPage < 2) {
+                startPage = Math.max(1, endPage - 2);
+            }
+            
+            // Create page number buttons
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm ${currentPage === i ? 'bg-blue-600' : 'bg-[#2D3B5A] hover:bg-[#3A4B6A]'}`;
+                pageButton.addEventListener('click', () => changePage(i));
+                paginationContainer.appendChild(pageButton);
+            }
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderTable();
+            setupPagination();
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredData = userData.filter(user => {
+                return user.username.toLowerCase().includes(searchTerm) || 
+                    user.email.toLowerCase().includes(searchTerm) ||
+                    (user.fullname && user.fullname.toLowerCase().includes(searchTerm)) ||
+                    user._id.toString().includes(searchTerm);
+            });
+            
+            // Reset to first page and re-render
+            currentPage = 1;
+            renderTable();
+            setupPagination();
+            document.getElementById('total-entries').textContent = filteredData.length;
+        }
+
+        function handleFilter() {
+            const filterValue = document.getElementById('filter-dropdown').value;
+            
+            if (filterValue === 'all') {
+                filteredData = [...userData];
+            } else if (filterValue === 'high-risk') {
+                filteredData = userData.filter(user => user.dyslexicScore >= 10);
+            } else if (filterValue === 'medium-risk') {
+                filteredData = userData.filter(user => user.dyslexicScore >= 5 && user.dyslexicScore < 10);
+            } else if (filterValue === 'low-risk') {
+                filteredData = userData.filter(user => user.dyslexicScore < 5);
+            }
+            
+            // Reset to first page and re-render
+            currentPage = 1;
+            renderTable();
+            setupPagination();
+            document.getElementById('total-entries').textContent = filteredData.length;
+        }
+
+        function sortTable(key) {
+            // Toggle sort direction
+            const isAscending = filteredData.length > 0 && filteredData[filteredData.length-1][key] > filteredData[0][key];
+            
+            filteredData.sort((a, b) => {
+                const aValue = a[key];
+                const bValue = b[key];
+                
+                if (isAscending) {
+                    return aValue > bValue ? -1 : 1;
+                } else {
+                    return aValue > bValue ? 1 : -1;
+                }
+            });
+            
+            renderTable();
+        }
+
+        function showUserDetails(userId) {
+            try {
+                // Find the user in the existing userData array
+                const user = userData.find(user => user._id === userId);
+                
+                if (!user) {
+                    throw new Error('User not found');
+                }
+                
+                // Determine risk level and advice
+                let riskLevel, riskColor, advice;
+                const dyslexicScore = user.dyslexicScore || 0;
+                
+                if (dyslexicScore >= 10) {
+                    riskLevel = 'High';
+                    riskColor = 'text-red-500';
+                    advice = 'Recommend professional assessment by a specialist. Consider providing specialized learning accommodations.';
+                } else if (dyslexicScore >= 5) {
+                    riskLevel = 'Medium';
+                    riskColor = 'text-yellow-500';
+                    advice = 'Consider monitoring reading progress and providing additional support. Further assessment may be beneficial.';
+                } else {
+                    riskLevel = 'Low';
+                    riskColor = 'text-green-500';
+                    advice = 'Standard reading instruction should be sufficient. Monitor for any developing difficulties.';
+                }
+                
+                // Format assessment date
+                const assessmentDate = new Date(user.date);
+                const formattedDate = assessmentDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const modalContent = document.getElementById('user-details-content');
+                modalContent.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm md:text-base">
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold mb-2">Personal Information</h3>
+                            <p><span class="text-gray-400">Name:</span> ${user.fullname}</p>
+                            <p><span class="text-gray-400">Username:</span> ${user.username}</p>
+                            <p><span class="text-gray-400">Email:</span> ${user.email}</p>
+                            <p><span class="text-gray-400">Phone:</span> ${user.phone || 'Not provided'}</p>
+                            <p><span class="text-gray-400">Gender:</span> ${user.gender || 'Not provided'}</p>
+                            <p><span class="text-gray-400">Date of Birth:</span> ${user.dob || 'Not provided'}</p>
+                            <p><span class="text-gray-400">Location:</span> ${[user.city, user.state, user.country].filter(Boolean).join(', ') || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-base md:text-lg font-semibold mb-2">Assessment Results</h3>
+                            <p><span class="text-gray-400">Quiz Completed:</span> ${user.completed ? 'Yes' : 'No'}</p>
+                            <p><span class="text-gray-400">General Score:</span> ${user.normalScore || 0}/20</p>
+                            <p><span class="text-gray-400">Dyslexia Indicators:</span> ${user.dyslexicScore || 0}/17</p>
+                            <p><span class="text-gray-400">Risk Level:</span> <span class="${riskColor} font-medium">${riskLevel}</span></p>
+                            <p><span class="text-gray-400">Assessment Date:</span> ${formattedDate}</p>
+                            <p><span class="text-gray-400">User ID:</span> ${user._id}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h3 class="text-base md:text-lg font-semibold mb-2">Recommendation</h3>
+                        <p>${advice}</p>
+                    </div>
+                `;
+                
+                // Show modal
+                document.getElementById('user-modal').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error displaying user details:', error);
+                alert('Failed to load user details. Please try again.');
+            }
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').classList.add('hidden');
+        }
+
+        async function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+                try {
+                    // Make API call to log out
+                    const response = await fetch(`${API_BASE}/auth/logout`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    alert('You have been logged out successfully.');
+                    window.location.href = '/';
+                    
+                } catch (error) {
+                    console.error('Error logging out:', error);
+                    window.location.href = '/';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
